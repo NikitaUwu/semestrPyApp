@@ -1,0 +1,219 @@
+/* Градиентный фон для главного окна, сплиттера и дока */
+QMainWindow, QSplitter {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:1,
+        stop:0 #396afc, stop:1 #2948ff
+    );
+}
+
+QDockWidget {
+    border: 1px solid #b6c0d6;
+    border-radius: 8px;
+}
+QDockWidget::title {
+    background:rgba(211, 218, 255, 0.77);
+    color: #fff;
+    padding-left: 12px;
+    font-weight: bold;
+    border-radius: 8px 8px 0 0;
+    height: 30px;
+}
+
+/* Градиент для таблицы, прозрачные строки */
+QTableWidget {
+    background: qlineargradient(
+        x1:0, y1:0, x2:1, y2:1,
+        stop:0 #e9f0fa, stop:1 #c9d6ff
+    );
+    alternate-background-color: rgba(233,240,250,0.55);
+    gridline-color: #b6c0d6;
+    font-size: 12px;
+    border-radius: 10px;
+}
+QTableWidget::item {
+    background-color: transparent;
+}
+QTableWidget::item:selected {
+    background-color: #79a7f7;
+}
+
+QHeaderView::section {
+    background-color: #2948ff;
+    color: white;
+    padding: 7px 5px;
+    border: none;
+    border-bottom: 2px solid #396afc;
+    font-weight: bold;
+    border-radius: 6px 6px 0 0;
+    font-size: 13px;
+}
+
+/* Панель инструментов */
+QToolBar {
+    background: rgba(41, 72, 255, 0.89);
+    border-bottom: 1.5px solid #396afc;
+}
+QToolButton {
+    background-color: transparent;
+    border: none;
+    padding: 7px 13px;
+    border-radius: 8px;
+    margin: 2px;
+}
+QToolButton:hover {
+    background-color: #e9f0fa;
+}
+QToolButton:pressed {
+    background-color: #aac7ff;
+}
+
+/* Диалоги */
+QDialog {
+    background-color: #f8fbff;
+    border: 1px solid #b6c0d6;
+    border-radius: 24px;
+}
+
+/* Кнопки диалогов */
+QDialogButtonBox QPushButton {
+    background-color: #396afc;
+    color: white;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 13px;
+}
+QDialogButtonBox QPushButton:hover {
+    background-color: #2948ff;
+}
+QDialogButtonBox QPushButton:pressed {
+    background-color: #2236a7;
+}
+
+/* Ручка сплиттера */
+QSplitter::handle {
+    background-color: #dee5f3;
+}
+QSplitter::handle:hover {
+    background-color: #b6c0d6;
+}
+
+/* Полоса прокрутки */
+QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 0px;
+}
+QScrollBar::handle:vertical {
+    background: #aac7ff;
+    min-height: 20px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #396afc;
+}
+
+/* Док-виджет */
+QDockWidget {
+    border: 1px solid #b6c0d6;
+    border-radius: 8px;
+}
+
+QDialog#StatsDialog {
+    background-color: #c9d6ff;
+    border: 4px solid #2948ff;
+    border-radius: 24px;
+}
+QPushButton#StatsOkBtn {
+    background-color: #2948ff;
+    color: white;
+    border-radius: 16px;
+    padding: 10px 24px;
+    font-size: 15px;
+}
+QPushButton#StatsOkBtn:hover {
+    background-color: #396afc;
+}
+
+QLabel#StatsTitleLabel {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2948ff;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+QTableCornerButton::section {
+    background-color:rgb(39, 194, 255);      /* основной цвет уголка */
+    border: 1px solid #b6c0d6;
+    border-top-left-radius: 8px;    /* чтобы угол тоже был скруглён */
+}
+
+/* Окно подписки */
+QDialog#SubscriptionDialog {
+    background-color: #e9f0fa;
+    border: 2px solid #2948ff;
+    border-radius: 20px;
+}
+
+QWidget#SubscriptionDialogWidget {
+    background-color: #f8fbff;
+    border-radius: 14px;
+    border: 1px solid #aac7ff;
+    margin: 0;
+    padding: 0;
+}
+
+QLabel {
+    font-size: 14px;
+    color: #2236a7;
+}
+
+QLineEdit, QComboBox, QDateEdit, QTextEdit, QDoubleSpinBox {
+    background: #e0eafc;
+    border: 1.2px solid #b6c0d6;
+    border-radius: 7px;
+    padding: 5px 8px;
+    font-size: 14px;
+    max-height: 100px;
+}
+
+QLineEdit:focus, QComboBox:focus, QDateEdit:focus, QTextEdit:focus, QDoubleSpinBox:focus {
+    border: 1.5px solid #2948ff;
+    background: #ffffff;
+}
+
+QDialogButtonBox QPushButton {
+    background-color: #2948ff;
+    color: white;
+    border-radius: 10px;
+    padding: 7px 20px;
+    font-size: 14px;
+}
+QDialogButtonBox QPushButton:hover {
+    background-color: #396afc;
+}
+QDialogButtonBox QPushButton:pressed {
+    background-color: #2236a7;
+}
+
+
+QDialog#DeleteConfirmDialog {
+    background-color: #fff3f3;
+    border: 4px solid #e53935;
+    border-radius: 18px;
+}
+QDialog#DeleteConfirmDialog QLabel {
+    color: #e53935;
+    font-weight: bold;
+}
+
+QDialog#DeleteConfirmDialog QPushButton#CancelDeleteBtn,
+QDialog#DeleteConfirmDialog > QWidget > QPushButton#CancelDeleteBtn {
+    background-color: #2948ff;
+    color: white;
+}
+
+QDialog#DeleteConfirmDialog QPushButton:hover {
+    background-color: #ad2323;
+}
+
