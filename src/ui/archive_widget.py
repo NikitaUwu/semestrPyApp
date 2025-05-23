@@ -33,7 +33,7 @@ class ArchiveTableView(QTableView):
         data = e.mimeData().data("application/x-subscription-id") # type: ignore
         sub_id = int(bytes(data).decode()) # type: ignore
         # Обновляем БД
-        main = self.window()  # MainWindow
+        main = self.window()
         db: Database = main.db # type: ignore
         conn = db.connection() # type: ignore
         conn.execute("UPDATE subscription SET is_active=0 WHERE id=?", (sub_id,)) # type: ignore

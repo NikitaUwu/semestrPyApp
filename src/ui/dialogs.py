@@ -27,8 +27,8 @@ PERIOD_MAP = {
 
 class SubscriptionDialog(QDialog):
     """Диалог создания или редактирования подписки."""
-    def __init__(self, parent=None): # type: ignore
-        super().__init__(parent) # type: ignore
+    def __init__(self, parent=None):  # type: ignore
+        super().__init__(parent)  # type: ignore
         self.setWindowTitle("Добавить подписку")
         self.setModal(True)
         self.setFixedSize(400, 400)
@@ -56,7 +56,7 @@ class SubscriptionDialog(QDialog):
         form.addRow("Стоимость:", self.cost_spin)
 
         self.period_combo = QComboBox(self)
-        self.period_combo.addItems(list(PERIOD_MAP.keys())) # type: ignore
+        self.period_combo.addItems(list(PERIOD_MAP.keys()))  # type: ignore
         form.addRow("Период:", self.period_combo)
 
         self.date_edit = QDateEdit(self)
@@ -74,10 +74,10 @@ class SubscriptionDialog(QDialog):
             QDialogButtonBox.StandardButton.Cancel,
             parent=self
         )
-        btns.accepted.connect(self.accept) # type: ignore
-        btns.rejected.connect(self.reject) # type: ignore
-        btns.button(QDialogButtonBox.StandardButton.Ok).setText("Сохранить") # type: ignore
-        btns.button(QDialogButtonBox.StandardButton.Cancel).setText("Отмена") # type: ignore
+        btns.accepted.connect(self.accept)  # type: ignore
+        btns.rejected.connect(self.reject)  # type: ignore
+        btns.button(QDialogButtonBox.StandardButton.Ok).setText("Сохранить")  # type: ignore
+        btns.button(QDialogButtonBox.StandardButton.Cancel).setText("Отмена")  # type: ignore
         form.addRow(btns)
 
     def get_data(self) -> tuple[str, float, str, dt.date, str] | None:
@@ -94,8 +94,8 @@ class SubscriptionDialog(QDialog):
 
 
 class DeleteConfirmDialog(QDialog):
-    def __init__(self, parent=None): # type: ignore
-        super().__init__(parent) # type: ignore
+    def __init__(self, parent=None):  # type: ignore
+        super().__init__(parent)  # type: ignore
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setWindowTitle("Подтверждение удаления")
         self.setFixedSize(350, 150)
@@ -105,47 +105,56 @@ class DeleteConfirmDialog(QDialog):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(18)
 
-        label = QLabel("Удалить подписку?\nЭто действие нельзя отменить.", self)
+        label = QLabel(
+            "Удалить подписку?\nЭто действие нельзя отменить.", self
+        )
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label.setStyleSheet("font-size: 16px;")
         layout.addWidget(label)
 
         btns = QDialogButtonBox(
-        QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.Cancel,
-        Qt.Orientation.Horizontal, self
+            QDialogButtonBox.StandardButton.Yes |
+            QDialogButtonBox.StandardButton.Cancel,
+            Qt.Orientation.Horizontal,
+            self
         )
-        btns.button(QDialogButtonBox.StandardButton.Yes).setText("Удалить") # type: ignore
-        btns.button(QDialogButtonBox.StandardButton.Cancel).setText("Отмена") # type: ignore
-        btns.button(QDialogButtonBox.StandardButton.Cancel).setObjectName("CancelDeleteBtn") # type: ignore
-        btns.accepted.connect(self.accept) # type: ignore
-        btns.rejected.connect(self.reject) # type: ignore
+        btns.button(QDialogButtonBox.StandardButton.Yes).setText("Удалить")  # type: ignore
+        btns.button(QDialogButtonBox.StandardButton.Cancel).setText("Отмена")  # type: ignore
+        btns.button(QDialogButtonBox.StandardButton.Cancel).setObjectName("CancelDeleteBtn")  # type: ignore
+        btns.accepted.connect(self.accept)  # type: ignore
+        btns.rejected.connect(self.reject)  # type: ignore
         layout.addWidget(btns)
 
         self._drag_pos = None
 
-    def mousePressEvent(self, event): # type: ignore
-        if event.button() == Qt.MouseButton.LeftButton: # type: ignore
-            self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft() # type: ignore
-            event.accept() # type: ignore
+    def mousePressEvent(self, event):  # type: ignore
+        if event.button() == Qt.MouseButton.LeftButton:  # type: ignore
+            self._drag_pos = ( # type: ignore
+                event.globalPosition().toPoint() - self.frameGeometry().topLeft() # type: ignore
+            )  # type: ignore
+            event.accept()  # type: ignore
         else:
-            super().mousePressEvent(event) # type: ignore
+            super().mousePressEvent(event)  # type: ignore
 
-    def mouseMoveEvent(self, event): # type: ignore
-        if self._drag_pos is not None and event.buttons() == Qt.MouseButton.LeftButton: # type: ignore
-            self.move(event.globalPosition().toPoint() - self._drag_pos) # type: ignore
-            event.accept() # type: ignore
+    def mouseMoveEvent(self, event):  # type: ignore
+        if (
+            self._drag_pos is not None and # type: ignore
+            event.buttons() == Qt.MouseButton.LeftButton # type: ignore
+        ):
+            self.move(event.globalPosition().toPoint() - self._drag_pos)  # type: ignore
+            event.accept()  # type: ignore
         else:
-            super().mouseMoveEvent(event) # type: ignore
+            super().mouseMoveEvent(event)  # type: ignore
 
-    def mouseReleaseEvent(self, event): # type: ignore
+    def mouseReleaseEvent(self, event):  # type: ignore
         self._drag_pos = None
-        event.accept() # type: ignore
+        event.accept()  # type: ignore
 
-    def resizeEvent(self, event): # type: ignore
+    def resizeEvent(self, event):  # type: ignore
         # Скругляем углы через маску
         radius = 18
         path = QPainterPath()
         path.addRoundedRect(0, 0, self.width(), self.height(), radius, radius)
         region = QRegion(path.toFillPolygon().toPolygon())
         self.setMask(region)
-        return super().resizeEvent(event) # type: ignore
+        return super().resizeEvent(event)  # type: ignore

@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import calendar
 import datetime as dt
-import pathlib
 
-from PyQt6.QtCore import Qt, QMimeData, QSettings
+from PyQt6.QtCore import Qt, QMimeData, QSettings, QUrl
 from PyQt6.QtGui import QAction, QDrag, QIcon
 from PyQt6.QtWidgets import (
     QApplication,
@@ -20,14 +19,12 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtSql import QSqlDatabase
 from PyQt6.QtMultimedia import QSoundEffect
-from PyQt6.QtCore import QUrl
 
+from src.config import ICON_PATH, SOUND_PATH
 from src.db import Database
 from src.logic import Reminder
-from src.ui.dialogs import SubscriptionDialog
+from src.ui.dialogs import SubscriptionDialog, DeleteConfirmDialog
 from src.ui.stats_dialog import StatsDialog
-from src.ui.dialogs import DeleteConfirmDialog
-
 
 # Русские подписи периодов
 PERIOD_RU = {
@@ -37,7 +34,6 @@ PERIOD_RU = {
     "yearly": "ежегодно",
 }
 
-# Вспомогательные классы для корректной сортировки
 class NumericItem(QTableWidgetItem):
     def __lt__(self, other): # type: ignore
         try:
@@ -54,9 +50,7 @@ class DateItem(QTableWidgetItem):
         except Exception:
             return super().__lt__(other)
 
-
 class DraggableTableWidget(QTableWidget):
-    """Таблица с поддержкой Drag & Drop по subscription-id."""
     def __init__(self, parent=None): # type: ignore
         super().__init__(0, 5, parent) # type: ignore
         self.setHorizontalHeaderLabels([ # type: ignore
@@ -66,14 +60,11 @@ class DraggableTableWidget(QTableWidget):
             "Дата след. платежа",
             "Заметки",
         ])
-        # Авто-растяжение колонок и строк
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch) # type: ignore
         self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch) # type: ignore
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        # Сортировка
         self.setSortingEnabled(True)
         self.horizontalHeader().setSortIndicatorShown(True) # type: ignore
-        # DnD
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDragDropMode(QTableWidget.DragDropMode.InternalMove)
@@ -89,22 +80,19 @@ class DraggableTableWidget(QTableWidget):
         drag.setMimeData(md)
         drag.exec(Qt.DropAction.MoveAction)
 
-
 class MainWindow(QMainWindow):
-    """Главное окно приложения: активные/архивные подписки и статистика."""
-
     def __init__(self, db: Database):
         super().__init__()
         self.db = db
         self.setWindowTitle("Трекер подписок")
         # Иконка окна
-        # Устанавливаем иконку окна из файла
-        icon_path = pathlib.Path(__file__).parent.parent / "resources" / "icons" / "app_icon.svg"
-        self.setWindowIcon(QIcon(str(icon_path)))
-        # Подключаем SQLite через Qt
+        self.setWindowIcon(QIcon(ICON_PATH))
+
+        # Qt-SQL
         self.sql_db = QSqlDatabase.addDatabase("QSQLITE")
         self.sql_db.setDatabaseName(str(db.db_path))
         self.sql_db.open()
+
         # Таблицы
         self.active_table = DraggableTableWidget()
         self.archive_table = DraggableTableWidget()
@@ -112,13 +100,14 @@ class MainWindow(QMainWindow):
             tbl.dragEnterEvent = self._dragEnterEvent # type: ignore
             tbl.dragMoveEvent = self._dragMoveEvent # type: ignore
             tbl.dropEvent = self._dropEvent # type: ignore
-        # Разметка: Splitter
+
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 1)
         splitter.addWidget(self.active_table)
         splitter.addWidget(self.archive_table)
         self.setCentralWidget(splitter)
+
         # Панель инструментов
         tb = QToolBar("MainToolbar")
         self.addToolBar(tb)
@@ -146,26 +135,21 @@ class MainWindow(QMainWindow):
                 action.setChecked(True)
                 action.toggled.connect(self._toggle_archive) # type: ignore
             tb.addAction(action) # type: ignore
+
         # Dock для архива
         self.archiveDock = QDockWidget("Архив", self)
         self.archiveDock.setWidget(self.archive_table)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.archiveDock)
-                # Напоминания и настройки
-        self.reminder = Reminder(db, self)
-        # Звуковое оповещение при старте
-        self._play_start_sound()
-        self._restore_settings()
-        # Загрузка данных
-        self.refresh_tables()
 
-    def _play_start_sound(self):
-        """Проигрывает звуковое оповещение при старте приложения."""
+        # Напоминания и стартовый звук
+        self.reminder = Reminder(db, self)
         sound = QSoundEffect(self)
-        # путь к файлу ding.wav в resources
-        wav_path = pathlib.Path(__file__).parent.parent / "resources" / "ding.wav"
-        sound.setSource(QUrl.fromLocalFile(str(wav_path)))
+        sound.setSource(QUrl.fromLocalFile(SOUND_PATH))
         sound.setVolume(0.5)
         sound.play()
+
+        self._restore_settings()
+        self.refresh_tables()
 
     def _toggle_archive(self, visible: bool):
         self.archiveDock.setVisible(visible)
@@ -174,12 +158,10 @@ class MainWindow(QMainWindow):
         StatsDialog(self.db, self).exec()
 
     def refresh_tables(self):
-        # Отключаем сортировку на время обновления
         self.active_table.setSortingEnabled(False)
         self.archive_table.setSortingEnabled(False)
         active = self.db.list_subscriptions(active_only=True)
         all_subs = self.db.list_subscriptions(active_only=False)
-
 
         def fill(table, rows): # type: ignore
             table.setRowCount(len(rows)) # type: ignore
@@ -208,11 +190,11 @@ class MainWindow(QMainWindow):
                 date_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 table.setItem(i, 3, date_item) # type: ignore
                 # Заметки
-                notes = row['notes'] or "" # type: ignore
+                notes = row["notes"] or "" # type: ignore
                 notes_item = QTableWidgetItem(notes) # type: ignore
                 notes_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 table.setItem(i, 4, notes_item) # type: ignore
-         
+
         fill(self.active_table, active)
         self.active_table.setSortingEnabled(True)
         fill(self.archive_table, [r for r in all_subs if not r["is_active"]])
@@ -245,22 +227,28 @@ class MainWindow(QMainWindow):
 
     def _compute_next_due(self, current: str, period: str) -> str:
         cur = dt.datetime.strptime(current, "%Y-%m-%d").date()
-        if period == "daily": nd = cur + dt.timedelta(days=1)
-        elif period == "weekly": nd = cur + dt.timedelta(weeks=1)
+        if period == "daily":
+            nd = cur + dt.timedelta(days=1)
+        elif period == "weekly":
+            nd = cur + dt.timedelta(weeks=1)
         elif period == "monthly":
             y = cur.year + (cur.month // 12)
             m = cur.month % 12 + 1
             d = min(cur.day, calendar.monthrange(y, m)[1])
             nd = dt.date(y, m, d)
         elif period == "yearly":
-            try: nd = dt.date(cur.year + 1, cur.month, cur.day)
-            except ValueError: nd = dt.date(cur.year + 1, 2, 28)
-        else: nd = cur
+            try:
+                nd = dt.date(cur.year + 1, cur.month, cur.day)
+            except ValueError:
+                nd = dt.date(cur.year + 1, 2, 28)
+        else:
+            nd = cur
         return nd.isoformat()
 
     def mark_paid(self):
         row = self.active_table.currentRow()
-        if row < 0: return
+        if row < 0:
+            return
         sid = int(self.active_table.item(row, 0).data(Qt.ItemDataRole.UserRole)) # type: ignore
         rec = self.db.get_subscription(sid)
         if rec:
@@ -291,8 +279,10 @@ class MainWindow(QMainWindow):
 
     def _restore_settings(self):
         st = QSettings("MyCompany", "SubscriptionTracker")
-        if geo := st.value("geometry"): self.restoreGeometry(geo)
-        if state := st.value("windowState"): self.restoreState(state)
+        if geo := st.value("geometry"):
+            self.restoreGeometry(geo)
+        if state := st.value("windowState"):
+            self.restoreState(state)
 
     def closeEvent(self, e): # type: ignore
         st = QSettings("MyCompany", "SubscriptionTracker")
