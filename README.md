@@ -13,7 +13,7 @@
 ## Структура проекта
 
 ```
-subscription-tracker/
+semestrPyApp/
 ├── src/
 │   ├── db.py                      # Работа с базой данных
 │   ├── logic.py                   # Логика напоминаний
