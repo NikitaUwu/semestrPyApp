@@ -4,9 +4,9 @@ from src.db import connect
 
 
 @pytest.fixture
-def db(): # type: ignore
+def db():
     """Каждый тест получает чистую in-memory БД."""
-    with connect(":memory:") as database: # type: ignore
+    with connect(":memory:") as database:
         yield database
 
 

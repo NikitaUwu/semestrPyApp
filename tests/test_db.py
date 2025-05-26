@@ -1,8 +1,8 @@
-import datetime as dt  # модуль для работы с датами
-from src.db import connect  # контекстный менеджер для подключения к БД
+import datetime as dt
+from src.db import connect
 
 
-def test_add_subscription_to_db(tmp_path):  # type: ignore
+def test_add_subscription_to_db(tmp_path):
     """
     Проверяет добавление подписки в базу данных.
     Шаги:
@@ -12,8 +12,8 @@ def test_add_subscription_to_db(tmp_path):  # type: ignore
     4. Достаём эту запись через get_subscription().
     5. Проверяем, что поля name, cost и period соответствуют переданным.
     """
-    db_file = tmp_path / "subs.db"  # type: ignore
-    with connect(db_file) as db:  # type: ignore
+    db_file = tmp_path / "subs.db"
+    with connect(db_file) as db:
         # Добавляем подписку и получаем её ID
         sid = db.add_subscription("Test", 100, "monthly", dt.date.today(), "test note")
         # Читаем подписку по ID

@@ -4,7 +4,7 @@ import datetime as dt
 import pathlib
 import sqlite3
 from contextlib import contextmanager
-from typing import Optional # type: ignore
+from typing import Optional
 from importlib import resources
 
 import src.sql
@@ -12,7 +12,7 @@ import src.sql
 class Database:
     def __init__(self, db_path: str | pathlib.Path = "subscriptions.db") -> None:
         self.db_path = pathlib.Path(db_path)
-        self._conn: Optional[sqlite3.Connection] = None # type: ignore
+        self._conn: Optional[sqlite3.Connection] = None
 
     def connect(self) -> None:
         """Открывает соединение и применяет схему (если нужно)."""
@@ -57,7 +57,7 @@ class Database:
             (name, cost, period, next_due.isoformat(), notes),
         )
         self._cx().commit()
-        return cur.lastrowid  # type: ignore
+        return cur.lastrowid
 
     def get_subscription(self, sub_id: int) -> sqlite3.Row | None:
         return self._cx().execute(
@@ -94,7 +94,7 @@ class Database:
             (subscription_id, date_paid.isoformat(), amount, comment),
         )
         self._cx().commit()
-        return cur.lastrowid  # type: ignore
+        return cur.lastrowid
 
     def due_soon(self, days_ahead: int = 3) -> list[sqlite3.Row]:
         param = f"+{days_ahead} days"
@@ -110,17 +110,17 @@ class Database:
 
 
 @contextmanager
-def connect(db_path: str = ":memory:"):  # type: ignore
+def connect(db_path: str = ":memory:"):
     """
-    Простой контекстный менеджер для работы с БД.
-    При входе открывает соединение, при выходе — гарантированно закрывает его.
+    Контекстный менеджер для работы с БД
+    При входе открывает соединение, при выходе гарантированно закрывает его
     """
     # Создаём экземпляр Database с указанным путём к файлу
     db = Database(db_path)
     # Открываем соединение и инициализируем схему, если нужно
     db.connect()
     try:
-        # Возвращаем объект db пользователю `with`-блока
+        # Возвращаем объект db пользователю
         yield db
     finally:
         # Даже если внутри with случилась ошибка — закроем соединение

@@ -22,9 +22,9 @@ from PyQt6.QtMultimedia import QSoundEffect
 
 from src.config import ICON_PATH, SOUND_PATH
 from src.db import Database
-from src.logic import Reminder
 from src.ui.dialogs import SubscriptionDialog, DeleteConfirmDialog
 from src.ui.stats_dialog import StatsDialog
+
 
 # Словарь для отображения периодов на русском при наполнении таблицы
 PERIOD_RU = {
@@ -36,10 +36,10 @@ PERIOD_RU = {
 
 class NumericItem(QTableWidgetItem):
     """
-    QTableWidgetItem для числовых значений.
-    Переопределяет сравнение, чтобы сортировка работала по числовому значению, а не по строке.
+    QTableWidgetItem для числовых значений
+    Переопределяет сравнение, чтобы сортировка работала по числовому значению
     """
-    def __lt__(self, other):  # type: ignore
+    def __lt__(self, other):
         try:
             return float(self.text()) < float(other.text())
         except Exception:
@@ -47,10 +47,10 @@ class NumericItem(QTableWidgetItem):
 
 class DateItem(QTableWidgetItem):
     """
-    QTableWidgetItem для дат в формате dd.mm.yyyy.
-    Переопределяет сравнение, чтобы сортировка шла по дате.
+    QTableWidgetItem для дат в формате dd.mm.yyyy
+    Переопределяет сравнение, чтобы сортировка шла по дате
     """
-    def __lt__(self, other):  # type: ignore
+    def __lt__(self, other):
         try:
             d1 = dt.datetime.strptime(self.text(), "%d.%m.%Y").date()
             d2 = dt.datetime.strptime(other.text(), "%d.%m.%Y").date()
@@ -63,10 +63,10 @@ class DraggableTableWidget(QTableWidget):
     Таблица с поддержкой Drag & Drop подписок.
     При перетаскивании переносит запись между активными и архивными.
     """
-    def __init__(self, parent=None):  # type: ignore
-        super().__init__(0, 5, parent)  # type: ignore # создаём таблицу с 5 колонками
+    def __init__(self, parent=None):
+        super().__init__(0, 5, parent) # создаём таблицу с 5 колонками
         # Устанавливаем заголовки колонок
-        self.setHorizontalHeaderLabels([  # type: ignore
+        self.setHorizontalHeaderLabels([
             "Название",
             "Сумма (руб.)",
             "Период",
@@ -74,28 +74,29 @@ class DraggableTableWidget(QTableWidget):
             "Заметки",
         ])
         # Авто-растяжение колонок и строк
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)  # type: ignore
-        self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)  # type: ignore
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         # Включаем сортировку и показываем индикацию
         self.setSortingEnabled(True)
-        self.horizontalHeader().setSortIndicatorShown(True)  # type: ignore
+        self.horizontalHeader().setSortIndicatorShown(True)
         # Включаем Drag & Drop внутри таблицы
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDragDropMode(QTableWidget.DragDropMode.InternalMove)
 
-    def startDrag(self, supportedActions):  # type: ignore
+    def startDrag(self, supportedActions):
         """При начале перетаскивания: передаём id подписки через MimeData."""
         row = self.currentRow()
         if row < 0:
             return
-        sub_id = int(self.item(row, 0).data(Qt.ItemDataRole.UserRole))  # type: ignore
+        sub_id = int(self.item(row, 0).data(Qt.ItemDataRole.UserRole))
         md = QMimeData()
         md.setData("application/x-subscription-id", str(sub_id).encode())
         drag = QDrag(self)
         drag.setMimeData(md)
         drag.exec(Qt.DropAction.MoveAction)
+
 
 class MainWindow(QMainWindow):
     """
@@ -120,11 +121,12 @@ class MainWindow(QMainWindow):
         # Создаём виджеты таблиц
         self.active_table = DraggableTableWidget()
         self.archive_table = DraggableTableWidget()
+        
         # Перехватываем события DnD у таблиц
         for tbl in (self.active_table, self.archive_table):
-            tbl.dragEnterEvent = self._dragEnterEvent  # type: ignore
-            tbl.dragMoveEvent  = self._dragMoveEvent   # type: ignore
-            tbl.dropEvent      = self._dropEvent       # type: ignore
+            tbl.dragEnterEvent = self._dragEnterEvent
+            tbl.dragMoveEvent = self._dragMoveEvent
+            tbl.dropEvent = self._dropEvent
 
         # Размещаем таблицы в QSplitter для разделения пространства
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -137,7 +139,7 @@ class MainWindow(QMainWindow):
         # Панель инструментов
         tb = QToolBar("MainToolbar")
         self.addToolBar(tb)
-        style = QApplication.instance().style()  # стандартный стиль Qt   # type: ignore
+        style = QApplication.instance().style()  # стандартный стиль Qt
         icons = {
             "Добавить": QStyle.StandardPixmap.SP_FileDialogNewFolder,
             "Отметить оплату": QStyle.StandardPixmap.SP_DialogApplyButton,
@@ -153,28 +155,21 @@ class MainWindow(QMainWindow):
         }
         # Добавляем кнопки на панель
         for text, pix in icons.items():
-            icon = style.standardIcon(pix)  # type: ignore
-            action = QAction(icon, text, self)  # type: ignore
+            icon = style.standardIcon(pix)
+            action = QAction(icon, text, self)
             if text in slots:
-                action.triggered.connect(slots[text])  # type: ignore
+                action.triggered.connect(slots[text])
             else:
                 # Кнопка показа/скрытия архива
                 action.setCheckable(True)
                 action.setChecked(True)
-                action.toggled.connect(self._toggle_archive)  # type: ignore
-            tb.addAction(action)  # type: ignore
+                action.toggled.connect(self._toggle_archive)
+            tb.addAction(action)
 
         # Док виджет для архива (отдельное окно-справа)
         self.archiveDock = QDockWidget("Архив", self)
         self.archiveDock.setWidget(self.archive_table)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.archiveDock)
-
-        # Напоминания (запускается проверка и таймер) и стартовый звук
-        self.reminder = Reminder(db, self)
-        sound = QSoundEffect(self)
-        sound.setSource(QUrl.fromLocalFile(SOUND_PATH))
-        sound.setVolume(0.5)
-        sound.play()
 
         # Восстановление геометрии и состояния окна из QSettings
         self._restore_settings()
@@ -199,37 +194,37 @@ class MainWindow(QMainWindow):
         active = self.db.list_subscriptions(active_only=True)
         all_subs = self.db.list_subscriptions(active_only=False)
 
-        def fill(table, rows):  # type: ignore
-            table.setRowCount(len(rows))  # type: ignore
-            for i, row in enumerate(rows):  # type: ignore
-                sid = row["id"]  # unique id подписки   # type: ignore
+        def fill(table, rows):
+            table.setRowCount(len(rows))
+            for i, row in enumerate(rows):
+                sid = row["id"]  # unique id подписки
                 # Название подписки
-                name_item = QTableWidgetItem(row["name"])  # type: ignore
+                name_item = QTableWidgetItem(row["name"])
                 name_item.setData(Qt.ItemDataRole.UserRole, sid)
                 name_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                table.setItem(i, 0, name_item)  # type: ignore
+                table.setItem(i, 0, name_item)
                 # Сумма к оплате
                 cost = NumericItem(f"{row['cost']:.2f}")
                 cost.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                table.setItem(i, 1, cost)  # type: ignore
+                table.setItem(i, 1, cost)
                 # Период платежа на русском
-                pr = QTableWidgetItem(PERIOD_RU.get(row["period"], row["period"]))  # type: ignore
+                pr = QTableWidgetItem(PERIOD_RU.get(row["period"], row["period"]))
                 pr.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                table.setItem(i, 2, pr)  # type: ignore
+                table.setItem(i, 2, pr)
                 # Дата следующего платежа
                 try:
-                    d = dt.datetime.strptime(row["next_due"], "%Y-%m-%d").date()  # type: ignore
+                    d = dt.datetime.strptime(row["next_due"], "%Y-%m-%d").date()
                     ds = d.strftime("%d.%m.%Y")
                 except Exception:
-                    ds = row["next_due"]  # type: ignore
-                date_item = DateItem(ds)  # type: ignore
+                    ds = row["next_due"]
+                date_item = DateItem(ds)
                 date_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                table.setItem(i, 3, date_item)  # type: ignore
+                table.setItem(i, 3, date_item)
                 # Заметки
-                notes = row["notes"] or ""  # type: ignore
-                notes_item = QTableWidgetItem(notes)  # type: ignore
+                notes = row["notes"] or ""
+                notes_item = QTableWidgetItem(notes)
                 notes_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                table.setItem(i, 4, notes_item)  # type: ignore
+                table.setItem(i, 4, notes_item)
 
         # Заполняем активные и включаем сортировку
         fill(self.active_table, active)
@@ -238,36 +233,36 @@ class MainWindow(QMainWindow):
         fill(self.archive_table, [r for r in all_subs if not r["is_active"]])
         self.archive_table.setSortingEnabled(True)
 
-    def _dragEnterEvent(self, e):  # type: ignore
+    def _dragEnterEvent(self, e):
         """Разрешает заход дропа, если формат mime соответствует подписке."""
-        if e.mimeData().hasFormat("application/x-subscription-id"):  # type: ignore
-            e.acceptProposedAction()  # type: ignore
+        if e.mimeData().hasFormat("application/x-subscription-id"):
+            e.acceptProposedAction()
         else:
-            e.ignore()  # type: ignore
+            e.ignore()
 
-    def _dragMoveEvent(self, e):  # type: ignore
+    def _dragMoveEvent(self, e):
         """Разрешает перемещение dnd по таблице."""
-        if e.mimeData().hasFormat("application/x-subscription-id"):  # type: ignore
-            e.acceptProposedAction()  # type: ignore
+        if e.mimeData().hasFormat("application/x-subscription-id"):
+            e.acceptProposedAction()
         else:
-            e.ignore()  # type: ignore
+            e.ignore()
 
-    def _dropEvent(self, e):  # type: ignore
+    def _dropEvent(self, e):
         """
         Обработка drop: смена флага is_active в БД и обновление таблиц.
         """
-        raw = e.mimeData().data("application/x-subscription-id")  # type: ignore
+        raw = e.mimeData().data("application/x-subscription-id")
         try:
-            sid = int(bytes(raw).decode())  # type: ignore
+            sid = int(bytes(raw).decode())
         except Exception:
-            return e.ignore()  # type: ignore
+            return e.ignore()
         # новая активность: 0 — из активных в архив, 1 — наоборот
-        new_state = 0 if e.source() is self.active_table else 1  # type: ignore
+        new_state = 0 if e.source() is self.active_table else 1
         conn = self.db.connection()
         conn.execute("UPDATE subscription SET is_active=? WHERE id=?", (new_state, sid))
         conn.commit()
         self.refresh_tables()
-        e.acceptProposedAction()  # type: ignore
+        e.acceptProposedAction()
 
     def _compute_next_due(self, current: str, period: str) -> str:
         """
@@ -303,7 +298,7 @@ class MainWindow(QMainWindow):
         row = self.active_table.currentRow()
         if row < 0:
             return
-        sid = int(self.active_table.item(row, 0).data(Qt.ItemDataRole.UserRole))  # type: ignore
+        sid = int(self.active_table.item(row, 0).data(Qt.ItemDataRole.UserRole))
         rec = self.db.get_subscription(sid)
         if rec:
             # сохраняем платеж
@@ -331,7 +326,7 @@ class MainWindow(QMainWindow):
         row = self.active_table.currentRow()
         if row < 0:
             return
-        sid = int(self.active_table.item(row, 0).data(Qt.ItemDataRole.UserRole))  # type: ignore
+        sid = int(self.active_table.item(row, 0).data(Qt.ItemDataRole.UserRole))
         dlg = DeleteConfirmDialog(self)
         if dlg.exec():
             conn = self.db.connection()
@@ -349,11 +344,11 @@ class MainWindow(QMainWindow):
         if state := st.value("windowState"):
             self.restoreState(state)
 
-    def closeEvent(self, e):  # type: ignore
+    def closeEvent(self, e):
         """
         Сохраняет положение и состояние окна при закрытии.
         """
         st = QSettings("MyCompany", "SubscriptionTracker")
         st.setValue("geometry", self.saveGeometry())
         st.setValue("windowState", self.saveState())
-        super().closeEvent(e)  # type: ignore
+        super().closeEvent(e)

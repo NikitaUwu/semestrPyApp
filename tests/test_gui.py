@@ -6,7 +6,7 @@ from src.db import connect
 from src.ui.main_window import MainWindow
 
 
-def test_mark_paid_adds_payment(qtbot, tmp_path):  # type: ignore
+def test_mark_paid_adds_payment(qtbot, tmp_path):
     """
     Тест проверяет, что метод mark_paid() добавляет запись в таблицу payment.
     Шаги:
@@ -19,13 +19,13 @@ def test_mark_paid_adds_payment(qtbot, tmp_path):  # type: ignore
     6. Проводим SQL-запрос к таблице payment подсчитывая записи для данной подписки.
     Ожидаем, что count == 1.
     """
-    db_file = tmp_path / "subs.db"  # type: ignore
-    with connect(db_file) as db:  # type: ignore
+    db_file = tmp_path / "subs.db"
+    with connect(db_file) as db:
         # Добавляем новую подписку и запоминаем её id
         sid = db.add_subscription("Test", 500, "monthly", dt.date.today())
         # Создаём главное окно и помещаем его в qtbot для тестирования
         main = MainWindow(db)
-        qtbot.addWidget(main)  # type: ignore
+        qtbot.addWidget(main)
         main.refresh_tables()  # Заполняем таблицы данными
         main.active_table.selectRow(0)  # Выбираем первую строку
         main.mark_paid()  # Отмечаем оплату подписки
@@ -39,7 +39,7 @@ def test_mark_paid_adds_payment(qtbot, tmp_path):  # type: ignore
 
 
 
-def test_archive_drag_and_drop(qtbot, tmp_path):  # type: ignore
+def test_archive_drag_and_drop(qtbot, tmp_path):
     """
     Тестирует, что при обновлении данных записей в архив, архивная таблица MainWindow содержит нужное количество строк.
     Шаги:
@@ -47,8 +47,8 @@ def test_archive_drag_and_drop(qtbot, tmp_path):  # type: ignore
     2. Открываем MainWindow и обновляем таблицы.
     3. Проверяем, что в archive_table одна строка.
     """
-    db_file = tmp_path / "subs.db"  # type: ignore
-    with connect(db_file) as db:  # type: ignore
+    db_file = tmp_path / "subs.db"
+    with connect(db_file) as db:
         # Добавляем и сразу архивируем запись
         sid = db.add_subscription("DragTest", 199, "yearly", dt.date.today())
         conn = db.connection()
@@ -57,7 +57,7 @@ def test_archive_drag_and_drop(qtbot, tmp_path):  # type: ignore
 
         # Создаем окно и обновляем таблицы
         main = MainWindow(db)
-        qtbot.addWidget(main)  # type: ignore
+        qtbot.addWidget(main)
         main.refresh_tables()
 
         # Должна быть ровно одна запись в архивном окне
@@ -65,7 +65,7 @@ def test_archive_drag_and_drop(qtbot, tmp_path):  # type: ignore
 
 
 
-def test_delete_subscription(qtbot, tmp_path):  # type: ignore
+def test_delete_subscription(qtbot, tmp_path):
     """
     Проверяет удаление подписки из активных.
     Шаги:
@@ -74,11 +74,11 @@ def test_delete_subscription(qtbot, tmp_path):  # type: ignore
     3. Удаляем запись напрямую из БД.
     4. Повторно обновляем таблицы и ожидаем, что активная таблица пуста.
     """
-    db_file = tmp_path / "subs.db"  # type: ignore
-    with connect(db_file) as db:  # type: ignore
+    db_file = tmp_path / "subs.db"
+    with connect(db_file) as db:
         sid = db.add_subscription("DeleteTest", 320, "monthly", dt.date.today())
         main = MainWindow(db)
-        qtbot.addWidget(main)  # type: ignore
+        qtbot.addWidget(main)
         main.refresh_tables()
         main.active_table.selectRow(0)  # Выбираем строку для удаления
 
@@ -93,7 +93,7 @@ def test_delete_subscription(qtbot, tmp_path):  # type: ignore
 
 
 
-def test_stats_dialog_works(qtbot, tmp_path):  # type: ignore
+def test_stats_dialog_works(qtbot, tmp_path):
     """
     Проверяет работу StatsDialog: отображает данные о подписках.
     Шаги:
@@ -102,8 +102,8 @@ def test_stats_dialog_works(qtbot, tmp_path):  # type: ignore
     3. Ищем все QLabel внутри диалога и проверяем,
        что среди них есть метка с текстом «Активных подписок».
     """
-    db_file = tmp_path / "subs.db"  # type: ignore
-    with connect(db_file) as db:  # type: ignore
+    db_file = tmp_path / "subs.db"
+    with connect(db_file) as db:
         db.add_subscription("Netflix", 999, "monthly", dt.date.today())
         from src.ui.stats_dialog import StatsDialog
         dlg = StatsDialog(db)

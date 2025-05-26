@@ -14,11 +14,11 @@ from PyQt6.QtCore import Qt
 
 class StatsDialog(QDialog):
     """
-    Модальный беззаголовочный диалог для отображения статистики по подпискам.
-    Поддерживает перетаскивание за любую область и скруглённые углы.
+    Модальный беззаголовочный диалог для отображения статистики по подпискам
+    Поддерживает перетаскивание за любую область и имеет скруглённые углы
     """
-    def __init__(self, db, parent=None):  # type: ignore
-        super().__init__(parent)  # type: ignore
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
         # Уникальный идентификатор для QSS стилизации
         self.setObjectName("StatsDialog")
         # Скрыть стандартный заголовок ОС
@@ -52,15 +52,15 @@ class StatsDialog(QDialog):
 
         # ===== Сбор метрик =====
         # Количество активных подписок
-        n_subs = self._count_active_subs(db)  # type: ignore
+        n_subs = self._count_active_subs(db)
         # Количество архивных подписок
-        archived = self._count_archived_subs(db)  # type: ignore
+        archived = self._count_archived_subs(db)
         # Общие траты за всё время
-        total = self._total_spent(db)  # type: ignore
+        total = self._total_spent(db)
         # Траты за последний год
-        year = self._year_spent(db)  # type: ignore
+        year = self._year_spent(db)
         # Траты за текущий месяц
-        month = self._month_spent(db)  # type: ignore
+        month = self._month_spent(db)
 
         # Формируем HTML-текст с данными
         stats_label = QLabel(
@@ -78,45 +78,45 @@ class StatsDialog(QDialog):
         ok_btn = QPushButton("OK")
         ok_btn.setObjectName("StatsOkBtn")
         ok_btn.setMinimumWidth(100)
-        ok_btn.clicked.connect(self.accept)  # Завершить диалог  # type: ignore
+        ok_btn.clicked.connect(self.accept)  # Завершить диалог
         vbox.addWidget(ok_btn, alignment=Qt.AlignmentFlag.AlignHCenter)
 
-    def _count_active_subs(self, db):  # type: ignore
+    def _count_active_subs(self, db):
         """Возвращает число подписок с is_active=True."""
-        rows = db.list_subscriptions(active_only=True)  # type: ignore
-        return len(rows) if rows else 0  # type: ignore
+        rows = db.list_subscriptions(active_only=True)
+        return len(rows) if rows else 0
 
-    def _count_archived_subs(self, db):  # type: ignore
+    def _count_archived_subs(self, db):
         """Возвращает число подписок с is_active=False."""
-        rows = db.list_subscriptions(active_only=False)  # type: ignore
-        return len([r for r in rows if not r["is_active"]]) if rows else 0  # type: ignore
+        rows = db.list_subscriptions(active_only=False)
+        return len([r for r in rows if not r["is_active"]]) if rows else 0 
 
-    def _total_spent(self, db):  # type: ignore
+    def _total_spent(self, db):
         """Сумма всех платежей за всё время."""
-        cur = db.connection().execute("SELECT SUM(amount) FROM payment")  # type: ignore
-        val = cur.fetchone()[0]  # type: ignore
-        return val if val else 0  # type: ignore
+        cur = db.connection().execute("SELECT SUM(amount) FROM payment")
+        val = cur.fetchone()[0]
+        return val if val else 0
 
-    def _year_spent(self, db):  # type: ignore
+    def _year_spent(self, db):
         """Сумма платежей за последние 365 дней."""
         start = (dt.date.today() - dt.timedelta(days=365)).isoformat()
-        cur = db.connection().execute( # type: ignore
+        cur = db.connection().execute(
             "SELECT SUM(amount) FROM payment WHERE date_paid >= ?", (start,)
         )
-        val = cur.fetchone()[0]  # type: ignore
-        return val if val else 0  # type: ignore
+        val = cur.fetchone()[0]
+        return val if val else 0
 
-    def _month_spent(self, db):  # type: ignore
+    def _month_spent(self, db):
         """Сумма платежей с начала текущего месяца."""
         today = dt.date.today()
         start = today.replace(day=1).isoformat()
-        cur = db.connection().execute( # type: ignore
+        cur = db.connection().execute(
             "SELECT SUM(amount) FROM payment WHERE date_paid >= ?", (start,)
         )
-        val = cur.fetchone()[0]  # type: ignore
-        return val if val else 0  # type: ignore
+        val = cur.fetchone()[0]
+        return val if val else 0
 
-    def resizeEvent(self, event):  # type: ignore
+    def resizeEvent(self, event):
         """
         При изменении размера обновляем маску для скругления углов.
         """
@@ -125,31 +125,31 @@ class StatsDialog(QDialog):
         path.addRoundedRect(0, 0, self.width(), self.height(), radius, radius)
         region = QRegion(path.toFillPolygon().toPolygon())
         self.setMask(region)
-        return super().resizeEvent(event)  # type: ignore
+        return super().resizeEvent(event)
 
-    def mousePressEvent(self, event):  # type: ignore
+    def mousePressEvent(self, event):
         """Начало перетаскивания окна за любую область."""
-        if event.button() == Qt.MouseButton.LeftButton:  # type: ignore
-            self._drag_pos = ( # type: ignore
-                event.globalPosition().toPoint() # type: ignore
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._drag_pos = (
+                event.globalPosition().toPoint()
                 - self.frameGeometry().topLeft()
-            )  # type: ignore
-            event.accept()  # type: ignore
+            )
+            event.accept()
         else:
-            super().mousePressEvent(event)  # type: ignore
+            super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event):  # type: ignore
+    def mouseMoveEvent(self, event):
         """Перемещение окна при удержании левой кнопки мыши."""
         if (
-            hasattr(self, '_drag_pos') and self._drag_pos is not None  # type: ignore
-            and event.buttons() == Qt.MouseButton.LeftButton  # type: ignore
+            hasattr(self, '_drag_pos') and self._drag_pos is not None
+            and event.buttons() == Qt.MouseButton.LeftButton
         ):
-            self.move(event.globalPosition().toPoint() - self._drag_pos)  # type: ignore
-            event.accept()  # type: ignore
+            self.move(event.globalPosition().toPoint() - self._drag_pos)
+            event.accept()
         else:
-            super().mouseMoveEvent(event)  # type: ignore
+            super().mouseMoveEvent(event)
 
-    def mouseReleaseEvent(self, event):  # type: ignore
+    def mouseReleaseEvent(self, event):
         """Завершение перетаскивания и сброс смещения."""
         self._drag_pos = None
-        event.accept()  # type: ignore
+        event.accept()
